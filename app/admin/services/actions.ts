@@ -4,6 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { generateTimeSlots } from '@/lib/utils/generate-slots';
 import type { Database, FacilityCategory, FacilityStatus } from '@/lib/types/database';
 
 interface FacilityInput {
@@ -49,29 +50,8 @@ export async function upsertFacility(input: FacilityInput) {
     
     if (insertError || !facility) return { error: insertError?.message ?? 'Failed to create facility' };
 
-    // Auto-generate time slots for new facility (14 days, 8AM-8PM, 1-hour blocks)
-    const facilityId = facility.id;
-    const today = new Date();
-    const timeSlots = [];
-
-    for (let dayOffset = 0; dayOffset < 14; dayOffset++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() + dayOffset);
-      const dateStr = date.toISOString().split('T')[0];
-
-      for (let hour = 8; hour < 20; hour++) {
-        const startTime = `${String(hour).padStart(2, '0')}:00:00`;
-        const endTime = `${String(hour + 1).padStart(2, '0')}:00:00`;
-        
-        timeSlots.push({
-          facility_id: facilityId,
-          date: dateStr,
-          start_time: startTime,
-          end_time: endTime,
-          is_available: true,
-        });
-      }
-    }
+    // Auto-generate time slots for new facility using utility function
+    const timeSlots = generateTimeSlots(facility.id);
 
     const { error: slotsError } = await supabase
       .from('time_slots')
