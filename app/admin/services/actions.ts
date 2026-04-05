@@ -40,8 +40,44 @@ export async function upsertFacility(input: FacilityInput) {
     const { error } = await supabase.from('facilities').update(payload).eq('id', input.id);
     if (error) return { error: error.message };
   } else {
-    const { error } = await supabase.from('facilities').insert(payload);
-    if (error) return { error: error.message };
+    // Insert new facility
+    const { data: facility, error: insertError } = await supabase
+      .from('facilities')
+      .insert(payload)
+      .select('id')
+      .single();
+    
+    if (insertError || !facility) return { error: insertError?.message ?? 'Failed to create facility' };
+
+    // Auto-generate time slots for new facility (14 days, 8AM-8PM, 1-hour blocks)
+    const facilityId = facility.id;
+    const today = new Date();
+    const timeSlots = [];
+
+    for (let dayOffset = 0; dayOffset < 14; dayOffset++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + dayOffset);
+      const dateStr = date.toISOString().split('T')[0];
+
+      for (let hour = 8; hour < 20; hour++) {
+        const startTime = `${String(hour).padStart(2, '0')}:00:00`;
+        const endTime = `${String(hour + 1).padStart(2, '0')}:00:00`;
+        
+        timeSlots.push({
+          facility_id: facilityId,
+          date: dateStr,
+          start_time: startTime,
+          end_time: endTime,
+          is_available: true,
+        });
+      }
+    }
+
+    const { error: slotsError } = await supabase
+      .from('time_slots')
+      .insert(timeSlots);
+
+    if (slotsError) return { error: `Facility created, but slots generation failed: ${slotsError.message}` };
   }
 
   revalidatePath('/admin/services');
