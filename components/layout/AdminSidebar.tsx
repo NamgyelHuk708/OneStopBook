@@ -62,7 +62,7 @@ export function AdminSidebar() {
           <NavLinks pathname={pathname} />
         </nav>
         <Link
-          href="/"
+          href="/home"
           className="flex items-center gap-2 px-3 py-2 text-xs text-g600 hover:text-g800 transition-colors"
         >
           ← Back to site
@@ -131,7 +131,7 @@ export function AdminSidebar() {
 
             {/* Back to site */}
             <Link
-              href="/"
+              href="/home"
               onClick={() => setDrawerOpen(false)}
               className="flex items-center gap-2 px-3 py-2 text-xs text-g600 hover:text-g800 transition-colors"
             >

@@ -26,26 +26,25 @@ export function HomepageClient({ facilities, activeAlert }: HomepageClientProps)
 
   return (
     <>
-      <Navbar />
       <AlertBar alert={activeAlert} />
 
       <main className="pb-20 sm:pb-8">
         {/* Hero */}
-        <section className="bg-g50 px-4 sm:px-6 pt-12 pb-10">
-          <div className="max-w-6xl mx-auto">
-            {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-pill bg-g100/30 border border-g100/50 mb-5">
-              <span className="w-1.5 h-1.5 rounded-full bg-g400" />
-              <span className="text-xs font-medium text-g600 tracking-label">
-                OneStopBook Platform
-              </span>
-            </div>
+        <section
+          className="relative px-4 sm:px-6 pt-24 pb-20 sm:pt-32 sm:pb-28 overflow-hidden"
+          style={{ backgroundImage: "url('/homepageimage.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}
+        >
+          {/* Dark gradient overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/20" />
 
-            <h1 className="text-4xl sm:text-5xl font-medium text-g800 leading-tight tracking-heading mb-4 max-w-xl">
+          <Navbar overlay />
+
+          <div className="relative max-w-6xl mx-auto">
+            <h1 className="text-4xl sm:text-5xl font-medium text-white leading-tight tracking-heading mb-4 max-w-xl">
               Book your <span className="text-g400">space</span>,<br />
               play your game.
             </h1>
-            <p className="text-g600 text-base max-w-md mb-8 leading-body">
+            <p className="text-white/70 text-base max-w-md mb-8 leading-body">
               Reserve sports courts, indoor arenas, and laundry services — all in one place.
             </p>
 
@@ -58,7 +57,7 @@ export function HomepageClient({ facilities, activeAlert }: HomepageClientProps)
                   placeholder="Search facilities…"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 rounded-pill border border-[#c0ddd0] bg-white text-g900 text-sm placeholder:text-g200 focus:outline-none focus:border-g400 transition-colors"
+                  className="w-full pl-10 pr-4 py-3 rounded-pill border border-white/20 bg-white/10 backdrop-blur-sm text-white text-sm placeholder:text-white/50 focus:outline-none focus:border-g400 transition-colors"
                 />
               </div>
               <button className="px-6 py-3 rounded-pill bg-g400 text-g50 text-sm font-medium hover:bg-g600 transition-colors">

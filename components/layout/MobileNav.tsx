@@ -6,7 +6,7 @@ import { Home, CalendarDays, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 const navItems = [
-  { href: '/', icon: Home, label: 'Home' },
+  { href: '/home', icon: Home, label: 'Home' },
   { href: '/dashboard', icon: CalendarDays, label: 'Bookings' },
   { href: '/dashboard?tab=notifications', icon: Bell, label: 'Alerts' },
 ];
@@ -21,7 +21,7 @@ export function MobileNav() {
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#d0ebe0] sm:hidden">
       <div className="flex items-center justify-around h-14">
         {navItems.map(({ href, icon: Icon, label }) => {
-          const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href.split('?')[0]);
+          const isActive = href === '/' ? pathname === '/home' : pathname.startsWith(href.split('?')[0]);
           return (
             <Link
               key={href}

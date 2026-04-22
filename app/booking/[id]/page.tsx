@@ -109,7 +109,7 @@ export default async function BookingConfirmationPage({ params }: Props) {
         )}
 
         <Link
-          href="/"
+          href="/home"
           className="flex items-center justify-center gap-2 w-full py-3 rounded-pill bg-g400 text-g50 text-sm font-medium hover:bg-g600 transition-colors"
         >
           <Home size={16} />
