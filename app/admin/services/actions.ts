@@ -23,6 +23,7 @@ interface FacilityInput {
 
 export async function upsertFacility(input: FacilityInput) {
   const supabase = await createServiceClient();
+  const isEdit = !!input.id;
 
   const payload = {
     name: input.name,
@@ -37,38 +38,91 @@ export async function upsertFacility(input: FacilityInput) {
     images: input.images,
   };
 
-  if (input.id) {
-    const { error } = await supabase.from('facilities').update(payload).eq('id', input.id);
+  if (isEdit) {
+    const { error } = await supabase.from('facilities').update(payload).eq('id', input.id!);
     if (error) return { error: error.message };
   } else {
-    // Insert new facility
     const { data: facility, error: insertError } = await supabase
       .from('facilities')
       .insert(payload)
       .select('id')
       .single();
-    
+
     if (insertError || !facility) return { error: insertError?.message ?? 'Failed to create facility' };
 
-    // Auto-generate time slots for new facility using utility function
     const timeSlots = generateTimeSlots(facility.id);
-
-    const { error: slotsError } = await supabase
-      .from('time_slots')
-      .insert(timeSlots);
-
+    const { error: slotsError } = await supabase.from('time_slots').insert(timeSlots);
     if (slotsError) return { error: `Facility created, but slots generation failed: ${slotsError.message}` };
   }
 
   revalidatePath('/admin/services');
   revalidatePath('/');
-  redirect('/admin/services');
+  redirect(`/admin/services?toast=${isEdit ? 'updated' : 'added'}`);
+}
+
+export async function regenerateAllSlots() {
+  const supabase = await createServiceClient();
+
+  const { data: facilities, error } = await supabase
+    .from('facilities')
+    .select('id');
+
+  if (error || !facilities) return { error: error?.message ?? 'Failed to fetch facilities' };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayStr = today.toISOString().split('T')[0];
+
+  let totalCreated = 0;
+
+  for (const facility of facilities) {
+    // Check if facility already has future slots
+    const { data: existing } = await supabase
+      .from('time_slots')
+      .select('id')
+      .eq('facility_id', facility.id)
+      .gte('date', todayStr)
+      .limit(1);
+
+    if (existing && existing.length > 0) continue;
+
+    // No future slots — generate 14 days from today
+    const slots = generateTimeSlots(facility.id, today);
+    const { error: insertError } = await supabase.from('time_slots').insert(slots);
+    if (!insertError) totalCreated += slots.length;
+  }
+
+  revalidatePath('/admin/services');
+  revalidatePath('/');
+  return { success: true, totalCreated };
 }
 
 export async function deleteFacility(id: string) {
   const supabase = await createServiceClient();
+
+  // Find all bookings for this facility to clean up dependents first
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('id')
+    .eq('facility_id', id);
+
+  const bookingIds = bookings?.map(b => b.id) ?? [];
+
+  if (bookingIds.length > 0) {
+    await supabase.from('notifications').delete().in('booking_id', bookingIds);
+    await supabase.from('credits').delete().in('booking_id', bookingIds);
+    await supabase.from('reviews').delete().in('booking_id', bookingIds);
+    await supabase.from('bookings').delete().in('id', bookingIds);
+  }
+
+  // Delete reviews, alerts linked directly to the facility
+  await supabase.from('reviews').delete().eq('facility_id', id);
+  await supabase.from('alerts').delete().eq('facility_id', id);
+
+  // Delete the facility — time_slots cascade automatically
   const { error } = await supabase.from('facilities').delete().eq('id', id);
   if (error) return { error: error.message };
+
   revalidatePath('/admin/services');
   revalidatePath('/');
 }

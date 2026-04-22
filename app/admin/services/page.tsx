@@ -1,30 +1,14 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { deleteFacility } from './actions';
 import { formatCurrency } from '@/lib/utils/formatters';
+import { DeleteButton, RegenerateSlotsButton } from '@/components/admin/ServicesClientButtons';
+import { ToastHandler } from '@/components/admin/ToastHandler';
+import { Suspense } from 'react';
 import type { Facility, FacilityStatus } from '@/lib/types/database';
 
 export const revalidate = 0;
-
-async function DeleteButton({ id }: { id: string }) {
-  async function action() {
-    'use server';
-    await deleteFacility(id);
-  }
-  return (
-    <form action={action}>
-      <button
-        type="submit"
-        className="p-1.5 rounded-[8px] text-g600 hover:text-danger hover:bg-danger-bg transition-colors"
-        title="Delete"
-      >
-        <Trash2 size={14} />
-      </button>
-    </form>
-  );
-}
 
 export default async function AdminServicesPage() {
   const supabase = await createClient();
@@ -39,15 +23,22 @@ export default async function AdminServicesPage() {
 
   return (
     <div className="p-6 sm:p-8">
+      <Suspense>
+        <ToastHandler />
+      </Suspense>
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-medium text-g800 tracking-heading">Services</h1>
-        <Link
-          href="/admin/services/new"
-          className="flex items-center gap-2 px-5 py-2.5 rounded-pill bg-g400 text-g50 text-sm font-medium hover:bg-g600 transition-colors"
-        >
-          <Plus size={15} />
-          Add service
-        </Link>
+        <div className="flex items-center gap-3">
+          <RegenerateSlotsButton />
+          <Link
+            href="/admin/services/new"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-pill bg-g400 text-g50 text-sm font-medium hover:bg-g600 transition-colors"
+          >
+            <Plus size={15} />
+            Add service
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-card border border-[#d0ebe0] overflow-hidden">
