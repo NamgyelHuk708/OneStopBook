@@ -18,14 +18,17 @@ export function ToastHandler() {
     if (!param) return;
     const entry = messages[param];
     if (entry) {
-      entry.type === 'success' ? toast.success(entry.message) : toast.error(entry.message);
+      if (entry.type === 'success') {
+        toast.success(entry.message);
+      } else {
+        toast.error(entry.message);
+      }
     }
-    // Remove the query param from the URL without re-rendering
     const next = new URLSearchParams(searchParams.toString());
     next.delete('toast');
     const clean = next.toString() ? `?${next}` : window.location.pathname;
     router.replace(clean);
-  }, [param]);
+  }, [param, router, searchParams]);
 
   return null;
 }
