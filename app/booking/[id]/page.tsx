@@ -2,9 +2,11 @@ import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, Bell, CalendarDays, Clock, Home } from 'lucide-react';
+import { Suspense } from 'react';
 import type { Booking, Notification } from '@/lib/types/database';
 import { formatDate, formatTimeRange, formatCurrency } from '@/lib/utils/formatters';
 import { format, parseISO } from 'date-fns';
+import { BookingConfirmedToast } from '@/components/booking/BookingConfirmedToast';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -38,6 +40,9 @@ export default async function BookingConfirmationPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-g50 px-4 py-12">
+      <Suspense>
+        <BookingConfirmedToast bookingRef={b.booking_ref} />
+      </Suspense>
       <div className="max-w-md mx-auto">
         {/* Success icon */}
         <div className="flex justify-center mb-6">

@@ -19,13 +19,13 @@ export function BookingsTable({ bookings, loading, onStatusChange }: BookingsTab
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-[#d0ebe0] bg-g50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Ref</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">User</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Facility</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Date & Time</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Amount</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Payment</th>
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Ref</th>
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">User</th>
+              <th className="hidden md:table-cell px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Facility</th>
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Date & Time</th>
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Amount</th>
+              <th className="px-2 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Status</th>
+              <th className="hidden lg:table-cell px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Payment</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#d0ebe0]">
@@ -40,12 +40,12 @@ export function BookingsTable({ bookings, loading, onStatusChange }: BookingsTab
             ) : (
               bookings.map(booking => (
                 <tr key={booking.id} className="hover:bg-g50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-xs text-g600">{booking.booking_ref}</td>
-                  <td className="px-4 py-3 text-g800">
+                  <td className="px-2 sm:px-4 py-3 font-mono text-xs text-g600 whitespace-nowrap">{booking.booking_ref}</td>
+                  <td className="px-2 sm:px-4 py-3 text-g800 whitespace-nowrap">
                     {booking.profile?.full_name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-g800">{booking.facility?.name}</td>
-                  <td className="px-4 py-3 text-g600 text-xs">
+                  <td className="hidden md:table-cell px-4 py-3 text-g800">{booking.facility?.name}</td>
+                  <td className="px-2 sm:px-4 py-3 text-g600 text-xs whitespace-nowrap">
                     {booking.slot ? (
                       <>
                         <div>{formatDate(booking.slot.date)}</div>
@@ -53,8 +53,8 @@ export function BookingsTable({ bookings, loading, onStatusChange }: BookingsTab
                       </>
                     ) : '—'}
                   </td>
-                  <td className="px-4 py-3 text-g800">{formatCurrency(booking.total_amount)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-2 sm:px-4 py-3 text-g800 whitespace-nowrap">{formatCurrency(booking.total_amount)}</td>
+                  <td className="px-2 sm:px-4 py-3">
                     {onStatusChange ? (
                       <select
                         value={booking.status}
@@ -70,7 +70,7 @@ export function BookingsTable({ bookings, loading, onStatusChange }: BookingsTab
                       <Badge variant={booking.status as BookingStatus} withDot>{booking.status}</Badge>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="hidden lg:table-cell px-4 py-3">
                     <Badge variant={booking.payment_status === 'paid' ? 'confirmed' : 'delayed'}>
                       {booking.payment_status}
                     </Badge>

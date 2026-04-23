@@ -39,7 +39,7 @@ export default function AdminBookingsPage() {
 
   return (
     <div className="p-6 sm:p-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
         <h1 className="text-2xl font-medium text-g800 tracking-heading">All bookings</h1>
         {!loading && (
           <span className="text-sm text-g600">{bookings.length} booking{bookings.length !== 1 ? 's' : ''}</span>

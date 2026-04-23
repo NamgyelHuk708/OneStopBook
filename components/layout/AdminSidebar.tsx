@@ -102,7 +102,7 @@ export function AdminSidebar() {
 
           {/* Drawer panel */}
           <div
-            className="relative w-64 bg-white h-full flex flex-col py-6 px-3 shadow-xl"
+            className="relative w-[min(16rem,82vw)] bg-white h-full flex flex-col py-6 px-3 shadow-xl"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}

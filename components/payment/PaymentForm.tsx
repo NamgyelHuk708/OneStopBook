@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { CreditCard, Smartphone, Shield, ChevronLeft } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { formatCurrency, formatDate, formatTimeRange } from '@/lib/utils/formatters';
@@ -73,7 +74,10 @@ export function PaymentForm({ facility, slot, onBack }: PaymentFormProps) {
         useCredit,
         creditAmount: creditDeduction,
       });
-      if (result?.error) setError(result.error);
+      if (result?.error) {
+        setError(result.error);
+        toast.error(result.error);
+      }
     });
   }
 

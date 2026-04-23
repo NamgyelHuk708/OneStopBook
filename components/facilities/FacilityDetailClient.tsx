@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Star, Users, MapPin, Layers, ChevronRight } from 'lucide-react';
+import { Star, Users, MapPin, Layers, ChevronRight, AlertTriangle, XCircle, RefreshCw } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -63,12 +63,29 @@ export function FacilityDetailClient({
 
   const { user } = useAuth();
   const router = useRouter();
+  const [isRefreshing, startRefresh] = useTransition();
 
+  // Dates with at least one available slot
   const availableDates = useMemo(() => {
     const set = new Set<string>();
     slots.filter(s => s.is_available).forEach(s => set.add(s.date));
     return set;
   }, [slots]);
+
+  // Dates that have both booked and available slots ("filling up")
+  const partialDates = useMemo(() => {
+    const bookedDates = new Set<string>();
+    slots.filter(s => !s.is_available).forEach(s => bookedDates.add(s.date));
+    const set = new Set<string>();
+    bookedDates.forEach(date => {
+      if (availableDates.has(date)) set.add(date);
+    });
+    return set;
+  }, [slots, availableDates]);
+
+  function handleRefresh() {
+    startRefresh(() => { router.refresh(); });
+  }
 
   const dateSlotsRaw = useMemo(
     () => (selectedDate ? slots.filter(s => s.date === selectedDate) : []),
@@ -161,6 +178,26 @@ export function FacilityDetailClient({
           <Badge variant={statusVariant[current.status]} withDot>{current.status}</Badge>
         </div>
 
+        {current.status === 'delayed' && (
+          <div className="mt-4 flex items-start gap-3 px-4 py-3 rounded-card bg-warning-bg border border-warning/30">
+            <AlertTriangle size={16} className="text-warning-text flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-warning-text">Facility under maintenance</p>
+              <p className="text-xs text-warning-text/80 mt-0.5">Bookings are temporarily unavailable. Please check back later.</p>
+            </div>
+          </div>
+        )}
+
+        {current.status === 'closed' && (
+          <div className="mt-4 flex items-start gap-3 px-4 py-3 rounded-card bg-danger-bg border border-danger/30">
+            <XCircle size={16} className="text-danger flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-danger">Facility closed</p>
+              <p className="text-xs text-danger/80 mt-0.5">This facility is currently closed and not accepting bookings.</p>
+            </div>
+          </div>
+        )}
+
         {current.description && (
           <p className="mt-3 text-sm text-g600 leading-relaxed">{current.description}</p>
         )}
@@ -220,10 +257,21 @@ export function FacilityDetailClient({
 
         {/* Calendar */}
         <div className="mt-8">
-          <h2 className="text-base font-medium text-g800 mb-4">Select a date</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-medium text-g800">Select a date</h2>
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-1.5 text-xs text-g600 hover:text-g400 transition-colors disabled:opacity-50"
+            >
+              <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''} />
+              Refresh availability
+            </button>
+          </div>
           <div className="bg-white rounded-card border border-[#d0ebe0] p-5">
             <CalendarPicker
               availableDates={availableDates}
+              partialDates={partialDates}
               selectedDate={selectedDate}
               onSelectDate={handleSelectDate}
             />
@@ -280,7 +328,11 @@ export function FacilityDetailClient({
       <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#d0ebe0] px-4 py-3">
         <div className="max-w-3xl mx-auto flex items-center justify-between gap-4">
           <div>
-            {selectedSlot ? (
+            {current.status !== 'open' ? (
+              <p className="text-sm font-medium text-warning-text">
+                {current.status === 'delayed' ? 'Under maintenance — bookings paused' : 'Facility closed'}
+              </p>
+            ) : selectedSlot ? (
               <>
                 <p className="text-xs text-g600">{selectedDate && formatDate(selectedDate)}</p>
                 <p className="text-sm font-medium text-g800">
@@ -295,7 +347,7 @@ export function FacilityDetailClient({
           </div>
           <Button
             onClick={handleProceed}
-            disabled={!selectedSlot || current.status === 'closed'}
+            disabled={!selectedSlot || current.status !== 'open'}
             size="md"
           >
             Proceed to payment

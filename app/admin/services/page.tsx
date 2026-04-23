@@ -27,7 +27,7 @@ export default async function AdminServicesPage() {
         <ToastHandler />
       </Suspense>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <h1 className="text-2xl font-medium text-g800 tracking-heading">Services</h1>
         <div className="flex items-center gap-3">
           <RegenerateSlotsButton />
@@ -42,43 +42,45 @@ export default async function AdminServicesPage() {
       </div>
 
       <div className="bg-white rounded-card border border-[#d0ebe0] overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-[#d0ebe0] bg-g50">
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Category</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Price/hr</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Status</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#d0ebe0]">
-            {facilities.map(f => (
-              <tr key={f.id} className="hover:bg-g50 transition-colors">
-                <td className="px-4 py-3 font-medium text-g800">{f.name}</td>
-                <td className="px-4 py-3">
-                  <Badge variant="default" className="capitalize">{f.category}</Badge>
-                </td>
-                <td className="px-4 py-3 text-g800">{formatCurrency(f.price_per_hour)}</td>
-                <td className="px-4 py-3">
-                  <Badge variant={statusVariant[f.status]} withDot>{f.status}</Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-1">
-                    <Link
-                      href={`/admin/services/${f.id}/edit`}
-                      className="p-1.5 rounded-[8px] text-g600 hover:text-g400 hover:bg-g100/30 transition-colors"
-                      title="Edit"
-                    >
-                      <Pencil size={14} />
-                    </Link>
-                    <DeleteButton id={f.id} />
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#d0ebe0] bg-g50">
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Name</th>
+                <th className="hidden sm:table-cell px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Category</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Price/hr</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Status</th>
+                <th className="px-3 sm:px-4 py-3 text-left text-xs font-medium text-g600 uppercase tracking-label">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-[#d0ebe0]">
+              {facilities.map(f => (
+                <tr key={f.id} className="hover:bg-g50 transition-colors">
+                  <td className="px-3 sm:px-4 py-3 font-medium text-g800">{f.name}</td>
+                  <td className="hidden sm:table-cell px-4 py-3">
+                    <Badge variant="default" className="capitalize">{f.category}</Badge>
+                  </td>
+                  <td className="px-3 sm:px-4 py-3 text-g800 whitespace-nowrap">{formatCurrency(f.price_per_hour)}</td>
+                  <td className="px-3 sm:px-4 py-3">
+                    <Badge variant={statusVariant[f.status]} withDot>{f.status}</Badge>
+                  </td>
+                  <td className="px-3 sm:px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/admin/services/${f.id}/edit`}
+                        className="p-1.5 rounded-[8px] text-g600 hover:text-g400 hover:bg-g100/30 transition-colors"
+                        title="Edit"
+                      >
+                        <Pencil size={14} />
+                      </Link>
+                      <DeleteButton id={f.id} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

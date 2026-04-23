@@ -6,17 +6,18 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 interface CalendarPickerProps {
-  availableDates: Set<string>; // "YYYY-MM-DD" dates that have at least one available slot
+  availableDates: Set<string>;   // dates with at least 1 available slot
+  partialDates: Set<string>;     // dates with some slots booked (available but not all free)
   selectedDate: string | null;
   onSelectDate: (date: string) => void;
 }
 
-export function CalendarPicker({ availableDates, selectedDate, onSelectDate }: CalendarPickerProps) {
+export function CalendarPicker({ availableDates, partialDates, selectedDate, onSelectDate }: CalendarPickerProps) {
   const [viewDate, setViewDate] = useState(new Date());
   const today = startOfDay(new Date());
 
   const days = eachDayOfInterval({ start: startOfMonth(viewDate), end: endOfMonth(viewDate) });
-  const startPadding = (getDay(days[0]) + 6) % 7; // Monday-first
+  const startPadding = (getDay(days[0]) + 6) % 7;
 
   const prevMonth = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() - 1, 1));
   const nextMonth = () => setViewDate(d => new Date(d.getFullYear(), d.getMonth() + 1, 1));
@@ -39,26 +40,23 @@ export function CalendarPicker({ availableDates, selectedDate, onSelectDate }: C
       {/* Day labels */}
       <div className="grid grid-cols-7 mb-2">
         {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-          <div key={d} className="text-center text-[10px] font-medium text-g600 py-1">
-            {d}
-          </div>
+          <div key={d} className="text-center text-[10px] font-medium text-g600 py-1">{d}</div>
         ))}
       </div>
 
       {/* Day grid */}
       <div className="grid grid-cols-7 gap-y-1">
-        {Array.from({ length: startPadding }).map((_, i) => (
-          <div key={`pad-${i}`} />
-        ))}
+        {Array.from({ length: startPadding }).map((_, i) => <div key={`pad-${i}`} />)}
         {days.map(day => {
           const dateStr = format(day, 'yyyy-MM-dd');
           const isPast = isBefore(day, today);
           const isAvailable = availableDates.has(dateStr);
+          const isPartial = partialDates.has(dateStr);
           const isSelected = selectedDate === dateStr;
           const isToday = isSameDay(day, today);
 
           return (
-            <div key={dateStr} className="flex justify-center">
+            <div key={dateStr} className="flex flex-col items-center gap-0.5">
               <button
                 disabled={isPast || !isAvailable}
                 onClick={() => onSelectDate(dateStr)}
@@ -73,9 +71,35 @@ export function CalendarPicker({ availableDates, selectedDate, onSelectDate }: C
               >
                 {format(day, 'd')}
               </button>
+
+              {/* Availability dot */}
+              {!isPast && isAvailable && (
+                <span className={cn(
+                  'w-1 h-1 rounded-full',
+                  isSelected ? 'bg-g50' : isPartial ? 'bg-[#BA7517]' : 'bg-g400'
+                )} />
+              )}
+              {/* Placeholder to keep row height consistent when no dot */}
+              {(isPast || !isAvailable) && <span className="w-1 h-1" />}
             </div>
           );
         })}
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-4 mt-4 pt-3 border-t border-[#e8f5ee]">
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-g400" />
+          <span className="text-[10px] text-g600">Available</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-[#BA7517]" />
+          <span className="text-[10px] text-g600">Filling up</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-g100" />
+          <span className="text-[10px] text-g600">Fully booked</span>
+        </div>
       </div>
     </div>
   );

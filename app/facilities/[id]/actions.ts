@@ -21,24 +21,37 @@ export async function createBooking(input: CreateBookingInput) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'You must be signed in to book.' };
 
-  // Verify slot is still available
+  // Check facility is open before allowing booking
+  const { data: facility } = await serviceSupabase
+    .from('facilities')
+    .select('status')
+    .eq('id', input.facilityId)
+    .single();
+
+  if (!facility) return { error: 'Facility not found.' };
+  if (facility.status === 'delayed') return { error: 'This facility is currently under maintenance and not accepting bookings.' };
+  if (facility.status === 'closed') return { error: 'This facility is closed and not accepting bookings.' };
+
+  // Fetch slot details (needed for notifications later)
   const { data: slot } = await serviceSupabase
     .from('time_slots')
     .select('*')
     .eq('id', input.slotId)
     .single();
 
-  if (!slot || !slot.is_available) {
-    return { error: 'This slot is no longer available. Please select another time.' };
+  if (!slot) {
+    return { error: 'Slot not found.' };
+  }
+
+  // Atomically claim the slot — returns false if another user just took it
+  const { data: reserved, error: reserveError } = await serviceSupabase
+    .rpc('reserve_slot', { p_slot_id: input.slotId });
+
+  if (reserveError || !reserved) {
+    return { error: 'This slot was just booked by someone else. Please select another time.' };
   }
 
   const bookingRef = generateBookingRef();
-
-  // 1. Mark slot unavailable
-  await serviceSupabase
-    .from('time_slots')
-    .update({ is_available: false })
-    .eq('id', input.slotId);
 
   // 2. Calculate final amount after credits
   const finalAmount = Math.max(0, input.totalAmount - (input.useCredit ? input.creditAmount : 0));
@@ -59,13 +72,13 @@ export async function createBooking(input: CreateBookingInput) {
     .select()
     .single();
 
-  if (bookingError) {
-    // Rollback: re-mark slot as available
+  if (bookingError || !booking) {
+    // Rollback: release the slot so another user can book it
     await serviceSupabase
       .from('time_slots')
       .update({ is_available: true })
       .eq('id', input.slotId);
-    return { error: bookingError.message };
+    return { error: 'Failed to create booking. Please try again.' };
   }
 
   // 4. Mark credit as used if applicable
