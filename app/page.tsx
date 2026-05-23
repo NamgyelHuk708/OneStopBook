@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
@@ -8,12 +8,12 @@ export default function LandingPage() {
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
 
-  useEffect(() => {
-    function goHome() {
-      setLeaving(true);
-      setTimeout(() => router.replace('/home'), 500);
-    }
+  const goHome = useCallback(() => {
+    setLeaving(true);
+    setTimeout(() => router.replace('/home'), 500);
+  }, [router]);
 
+  useEffect(() => {
     if (localStorage.getItem('osb_visited')) {
       router.replace('/home');
       return;
@@ -22,7 +22,7 @@ export default function LandingPage() {
 
     const timer = setTimeout(goHome, 2800);
     return () => clearTimeout(timer);
-  }, [router]);
+  }, [router, goHome]);
 
   return (
     <>
