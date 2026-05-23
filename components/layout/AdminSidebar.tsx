@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CalendarDays, Building2, Bell, Users, Menu, X } from 'lucide-react';
+import { LayoutDashboard, CalendarDays, Building2, Bell, Users, Download, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { href: '/admin/services', icon: Building2, label: 'Services' },
   { href: '/admin/alerts', icon: Bell, label: 'Alerts' },
   { href: '/admin/users', icon: Users, label: 'Users' },
+  { href: '/admin/export', icon: Download, label: 'Export' },
 ];
 
 function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
