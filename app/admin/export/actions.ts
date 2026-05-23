@@ -221,7 +221,7 @@ export async function getFacilityUsageData(
   }
 
   const rows: UsageRow[] = [];
-  for (const [, entry] of facilityMap) {
+  for (const [, entry] of Array.from(facilityMap)) {
     const utilPct = availableHoursPerFacility > 0
       ? Math.round((entry.totalHours / availableHoursPerFacility) * 100)
       : 0;
