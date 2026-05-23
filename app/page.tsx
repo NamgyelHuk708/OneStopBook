@@ -8,12 +8,12 @@ export default function LandingPage() {
   const router = useRouter();
   const [leaving, setLeaving] = useState(false);
 
-  function goHome() {
-    setLeaving(true);
-    setTimeout(() => router.replace('/home'), 500);
-  }
-
   useEffect(() => {
+    function goHome() {
+      setLeaving(true);
+      setTimeout(() => router.replace('/home'), 500);
+    }
+
     if (localStorage.getItem('osb_visited')) {
       router.replace('/home');
       return;
@@ -22,7 +22,7 @@ export default function LandingPage() {
 
     const timer = setTimeout(goHome, 2800);
     return () => clearTimeout(timer);
-  }, []);
+  }, [router]);
 
   return (
     <>

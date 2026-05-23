@@ -8,7 +8,7 @@ export function BookingConfirmedToast({ bookingRef }: { bookingRef: string }) {
     toast.success(`Booking confirmed! Ref: ${bookingRef}`, {
       duration: 5000,
     });
-  }, []);
+  }, [bookingRef]);
 
   return null;
 }

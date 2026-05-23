@@ -115,7 +115,7 @@ export async function getBookingReportData(
   if (bookings.length === 0) return { rows: [], error: null };
 
   // Fetch profiles
-  const userIds = [...new Set(bookings.map(b => b.user_id))];
+  const userIds = Array.from(new Set(bookings.map(b => b.user_id)));
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, full_name, phone')
