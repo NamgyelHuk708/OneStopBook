@@ -102,7 +102,7 @@ export function mode<T>(arr: T[]): T | null {
   if (arr.length === 0) return null;
   const freq = new Map<T, number>();
   for (const item of arr) freq.set(item, (freq.get(item) ?? 0) + 1);
-  return [...freq.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  return Array.from(freq.entries()).sort((a, b) => b[1] - a[1])[0][0];
 }
 
 // ── Filename helpers ──────────────────────────────────────────────────────────

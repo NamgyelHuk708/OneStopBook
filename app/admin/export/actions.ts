@@ -293,7 +293,7 @@ export async function getProblemUsersData(
   }
 
   // Filter out users with fewer than 3 bookings
-  const eligibleIds = [...userMap.entries()]
+  const eligibleIds = Array.from(userMap.entries())
     .filter(([, u]) => u.total >= 3)
     .map(([id]) => id);
 
@@ -370,7 +370,7 @@ export async function getSummaryStats(
   }
 
   const topFacility = facilityCount.size > 0
-    ? [...facilityCount.entries()].sort((a, b) => b[1] - a[1])[0][0]
+    ? Array.from(facilityCount.entries()).sort((a, b) => b[1] - a[1])[0][0]
     : '—';
 
   return {
