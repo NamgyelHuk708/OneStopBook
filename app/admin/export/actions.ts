@@ -10,6 +10,38 @@ import {
   mode,
 } from '@/lib/utils/csv-export';
 
+// Raw joined shapes returned by Supabase selects in this file
+interface RawBooking {
+  id: string;
+  user_id: string;
+  status: BookingStatus;
+  total_amount: number;
+  payment_status: string;
+  payment_method: string | null;
+  booking_ref: string;
+  created_at: string;
+  facility: { id: string; name: string } | null;
+  slot: { date: string; start_time: string; end_time: string } | null;
+}
+
+interface RawUsageBooking {
+  status: BookingStatus;
+  facility: { id: string; name: string; slot_duration_hours: number } | null;
+  slot: { date: string; start_time: string; end_time: string } | null;
+}
+
+interface RawUserBooking {
+  user_id: string;
+  status: BookingStatus;
+  slot: { date: string } | null;
+}
+
+interface RawStatBooking {
+  status: BookingStatus;
+  facility: { name: string } | null;
+  slot: { date: string } | null;
+}
+
 function getClient() {
   return createServiceClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,7 +88,7 @@ export async function getBookingReportData(
 
   if (error) return { rows: [], error: error.message };
 
-  let bookings = (data ?? []) as any[];
+  let bookings = (data ?? []) as unknown as RawBooking[];
 
   // Filter by slot date range (client-side — consistent with existing pattern)
   bookings = bookings.filter(b => {
@@ -83,14 +115,14 @@ export async function getBookingReportData(
   if (bookings.length === 0) return { rows: [], error: null };
 
   // Fetch profiles
-  const userIds = [...new Set(bookings.map((b: any) => b.user_id))] as string[];
+  const userIds = [...new Set(bookings.map(b => b.user_id))];
   const { data: profiles } = await supabase
     .from('profiles')
     .select('id, full_name, phone')
     .in('id', userIds);
   const profileMap = new Map((profiles ?? []).map(p => [p.id, p]));
 
-  const rows: BookingRow[] = bookings.map((b: any) => {
+  const rows: BookingRow[] = bookings.map((b) => {
     const profile = profileMap.get(b.user_id);
     return {
       'Date':           b.slot?.date ? formatShortDate(b.slot.date) : '',
@@ -138,7 +170,7 @@ export async function getFacilityUsageData(
   if (error) return { rows: [], error: error.message };
 
   // Filter to date range, exclude cancelled
-  const bookings = ((data ?? []) as any[]).filter(b => {
+  const bookings = ((data ?? []) as unknown as RawUsageBooking[]).filter(b => {
     const d = b.slot?.date;
     if (!d) return false;
     return d >= fromDate && d <= toDate && b.status !== 'cancelled';
@@ -245,7 +277,7 @@ export async function getProblemUsersData(
   if (error) return { rows: [], error: error.message };
 
   // Filter to date range
-  const bookings = ((data ?? []) as any[]).filter(b => {
+  const bookings = ((data ?? []) as unknown as RawUserBooking[]).filter(b => {
     const d = b.slot?.date;
     if (!d) return false;
     return d >= fromDate && d <= toDate;
@@ -320,7 +352,7 @@ export async function getSummaryStats(
 
   if (error) return { stats: null, error: error.message };
 
-  const bookings = ((data ?? []) as any[]).filter(b => {
+  const bookings = ((data ?? []) as unknown as RawStatBooking[]).filter(b => {
     const d = b.slot?.date;
     return d && d >= fromDate && d <= toDate;
   });

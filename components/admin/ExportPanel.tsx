@@ -303,8 +303,8 @@ export function ExportPanel() {
       }
       downloadCSV(rows, getFilename());
       showToast(`Downloaded ${rows.length} rows successfully.`, 'success');
-    } catch (e: any) {
-      showToast(e?.message ?? 'Export failed. Please try again.', 'error');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Export failed. Please try again.', 'error');
     } finally {
       setExporting(false);
     }
@@ -320,8 +320,8 @@ export function ExportPanel() {
       const rows = await fetchData();
       setPreviewRows(rows);
       setShowPreview(true);
-    } catch (e: any) {
-      showToast(e?.message ?? 'Preview failed.', 'error');
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : 'Preview failed.', 'error');
     } finally {
       setPreviewing(false);
     }
