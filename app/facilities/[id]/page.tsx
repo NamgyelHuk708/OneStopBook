@@ -45,7 +45,7 @@ export default async function FacilityDetailPage({ params, searchParams }: Props
   return (
     <FacilityDetailClient
       facility={facilityRes.data as Facility}
-      reviews={(reviewsRes.data ?? []) as (Review & { profile: { full_name: string | null; avatar_url: string | null } | null })[]}
+      reviews={(reviewsRes.data ?? []) as unknown as (Review & { profile: { full_name: string | null; avatar_url: string | null } | null })[]}
       slots={(slotsRes.data ?? []) as TimeSlot[]}
       initialStep={step === 'payment' ? 'payment' : 'detail'}
       initialSlotId={slotId}
